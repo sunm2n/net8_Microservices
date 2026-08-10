@@ -10,3 +10,9 @@ There is a couple of microservices which implemented **e-commerce** modules over
 
 ### Check Explanation of this Repository on Medium
 * [.NET 8 Microservices: DDD, CQRS, Vertical/Clean Architecture and Event-Driven Communication](https://medium.com/@mehmetozkaya/net-8-microservices-ddd-cqrs-vertical-clean-architecture-2dd7ebaaf4bd)
+
+---
+
+# 내용 정리
+
+* [1장](https://app.notion.com/p/Chapter1-3b84f47a5b32802f93d3f59adf743543?source=copy_link)
