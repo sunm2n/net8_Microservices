@@ -47,3 +47,31 @@ Error: in 18+, these Docker images are configured to store database data in a
 ### 해결
 
 `catalogdb`, `basketdb`의 이미지를 `postgres:17`로 고정했다. 이 프로젝트는 EF Core/Npgsql 표준 SQL만 사용하므로 메이저 버전에 따른 호환성 문제는 없고, 최신 `latest` 태그를 그대로 쓰면 Docker Hub 쪽 이미지가 갱신될 때마다 동일한 문제가 재발할 수 있어 버전을 명시적으로 고정하는 편이 안전하다.
+
+## 3. macOS에 dev-cert가 없어 HTTPS 바인딩 실패
+
+### 증상
+
+1번 이슈를 고치며 `${APPDATA}/ASP.NET/Https` 볼륨(dev-cert 마운트)도 함께 제거됐는데, 각 API 서비스의 환경변수에는 여전히 `ASPNETCORE_HTTPS_PORTS=8081`이 남아있어 컨테이너가 뜨자마자 죽었다(`Exited (133)`).
+
+```
+Unhandled exception. System.InvalidOperationException: Unable to configure HTTPS endpoint.
+No server certificate was specified, and the default developer certificate
+could not be found or is out of date.
+```
+
+### 원인
+
+`${APPDATA}/ASP.NET/Https` 마운트는 Windows에서 `dotnet dev-certs https`로 생성한 인증서를 컨테이너에 넣어주기 위한 것이었다. macOS에서 동일하게 맞추려면 호스트에 인증서를 새로 만들고 서비스마다 인증서 경로/비밀번호 환경변수를 추가로 잡아줘야 해서 설정이 번거롭다. 반면 HTTPS/TLS 설정은 이 강의(DDD·CQRS·Vertical/Clean Architecture)가 다루는 애플리케이션/도메인 레이어 학습 내용과는 무관한 전송 계층 문제라, 로컬 Docker 환경에서는 컨테이너 간 통신을 HTTP로 통일하는 쪽이 실용적이라고 판단했다.
+
+### 해결
+
+- 6개 API 서비스에서 `ASPNETCORE_HTTPS_PORTS` 환경변수와 `8081` 포트 매핑을 제거했다. YARP 게이트웨이(`appsettings.json`)는 이미 클러스터 대상 주소를 `http://`로 설정하고 있어 별도 수정이 필요 없었다.
+- `basket.api`가 `discount.grpc`를 호출할 때 쓰는 `GrpcSettings__DiscountUrl`을 `https://discount.grpc:8081` → `http://discount.grpc:8080`으로 변경했다.
+- gRPC는 기본적으로 TLS 위에서 HTTP/2를 사용하므로, 평문 HTTP/2(h2c) 호출을 허용하기 위해 `Basket.API/Program.cs` 최상단에 다음 스위치를 추가했다(Microsoft 공식 문서에서 권장하는 방식).
+
+```csharp
+AppContext.SetSwitch("System.Net.Http.SocketsHttpHandler.Http2UnencryptedSupport", true);
+```
+
+  `discount.grpc`의 `appsettings.json`에는 이미 `Kestrel:EndpointDefaults:Protocols = Http2`가 설정되어 있어 서버 쪽은 별도 수정 없이 HTTP 포트(8080)에서 h2c를 지원한다.
