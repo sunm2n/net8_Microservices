@@ -17,3 +17,4 @@ There is a couple of microservices which implemented **e-commerce** modules over
 
 * [1장](https://app.notion.com/p/Chapter1-3b84f47a5b32802f93d3f59adf743543?source=copy_link)
 * [2장](https://app.notion.com/p/Chapter2-3b84f47a5b32801abfd7decc97b98fce?source=copy_link)
+* [3장](https://app.notion.com/p/Chapter3-3b94f47a5b32809ea9c1cf7045783c98?source=copy_link)
