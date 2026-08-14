@@ -16,6 +16,10 @@
 
   <ItemGroup>
     <PackageReference Include="Grpc.AspNetCore" Version="2.60.0" />
+    <!-- gRPC 표준 health checking 프로토콜. Kubernetes 의 grpc 프로브가 이것을 호출한다 -->
+    <PackageReference Include="Grpc.AspNetCore.HealthChecks" Version="2.60.0" />
+    <!-- DbContext 연결 상태를 health check 에 포함시킨다 -->
+    <PackageReference Include="Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore" Version="8.0.0" />
     <PackageReference Include="Mapster" Version="7.4.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.1">
