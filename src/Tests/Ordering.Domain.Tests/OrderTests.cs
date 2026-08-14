@@ -52,8 +52,8 @@ public class OrderTests
         order.Add(ProductId.Of(Guid.NewGuid()), quantity: 2, price: 950);
         order.Add(ProductId.Of(Guid.NewGuid()), quantity: 3, price: 100);
 
-        // 게이트 검증용으로 일부러 틀린 기대값을 넣는다. 확인 후 되돌린다.
-        order.TotalPrice.Should().Be(9999);
+        // 2 × 950 + 3 × 100
+        order.TotalPrice.Should().Be(2200);
     }
 
     [Theory]
