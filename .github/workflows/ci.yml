@@ -31,8 +31,22 @@ jobs:
     runs-on: [self-hosted, erp-poc]
 
     env:
-      # Homebrew 로 설치한 도구(gh, java 등)를 러너 환경에서 찾게 한다.
-      PATH: /opt/homebrew/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+      # 러너는 로그인 셸이 아닌 환경에서 돌아 PATH 가 최소 상태다.
+      # 필요한 도구의 위치를 직접 넣는다.
+      #
+      #   /opt/homebrew/bin        gh, kind, helm, java
+      #   /usr/local/share/dotnet  .NET SDK
+      #     macOS 설치본은 /usr/local/bin 에 링크를 만들지 않는다.
+      #     이것이 빠져 첫 실행이 "dotnet SDK 가 필요하다" 로 멈췄다.
+      #
+      # dotnet 전역 도구(~/.dotnet/tools)는 여기 넣지 않는다.
+      # 이 블록에서는 $HOME 이 전개되지 않고, 필요한 ci-analyze.sh 가 스스로 넣는다.
+      PATH: /opt/homebrew/bin:/usr/local/share/dotnet:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin
+
+      DOTNET_ROOT: /usr/local/share/dotnet
+      # 첫 실행 시 나오는 환영 메시지가 출력에 섞이지 않게 한다.
+      DOTNET_NOLOGO: "true"
+      DOTNET_CLI_TELEMETRY_OPTOUT: "true"
 
     steps:
       - name: 소스 체크아웃
