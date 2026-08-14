@@ -74,16 +74,26 @@ log "분석 시작  ${SONAR_PROJECT} v${PROJECT_VERSION}"
 
 cd "${SRC_DIR}"
 
-dotnet-sonarscanner begin \
-  /k:"${SONAR_PROJECT}" \
-  /v:"${PROJECT_VERSION}" \
-  /d:sonar.host.url="${SONAR_HOST_URL}" \
-  /d:sonar.token="${SONAR_TOKEN}" \
-  /d:sonar.scanner.scanAll=false \
-  /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/*.cshtml" \
-  /d:sonar.qualitygate.wait=true \
-  /d:sonar.qualitygate.timeout=300 \
-  >/dev/null || die "스캐너 begin 실패"
+# 출력을 파일에 남긴다.
+#
+# >/dev/null 로 버리면 "Pre-processing failed. Exit code: 1" 만 남고
+# 진짜 이유를 알 수 없다. 실제로 토큰 만료로 실패했을 때 그 상태였다.
+if ! dotnet-sonarscanner begin \
+       /k:"${SONAR_PROJECT}" \
+       /v:"${PROJECT_VERSION}" \
+       /d:sonar.host.url="${SONAR_HOST_URL}" \
+       /d:sonar.token="${SONAR_TOKEN}" \
+       /d:sonar.scanner.scanAll=false \
+       /d:sonar.exclusions="**/bin/**,**/obj/**,**/Migrations/**,**/*.cshtml" \
+       /d:sonar.qualitygate.wait=true \
+       /d:sonar.qualitygate.timeout=300 \
+       >/tmp/sonar-begin.log 2>&1; then
+  tail -30 /tmp/sonar-begin.log >&2
+  die "스캐너 begin 실패 — 위 출력 참고.
+  인증 오류라면 토큰이 만료됐을 수 있다.
+  매니페스트 저장소의 scripts/50-install-sonarqube.sh token 으로 재발급하면
+  SONAR_TOKEN 시크릿까지 함께 갱신된다."
+fi
 ok "begin"
 
 dotnet build eshop-microservices.sln -c Release --nologo >/dev/null 2>&1 \
