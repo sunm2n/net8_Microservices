@@ -396,3 +396,7 @@ FodyWeavers.xsd
 
 # JetBrains Rider
 *.sln.iml
+
+# 테스트 결과·정적분석 산출물
+TestResults/
+.sonarqube/
